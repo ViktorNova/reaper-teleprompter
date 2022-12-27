@@ -1,4 +1,4 @@
-## Reaper Teleprompter
+# Reaper Teleprompter
 
 ## Installation
 Navigate to your REAPER resource folder in a terminal (you can find this by clicking Options > "Show REAPER resource path in explorer/finder")

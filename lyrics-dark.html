@@ -20,36 +20,61 @@
 }
 
 body {
-  background-color:#000;
-  color:#fff;
+  margin: 0;
+  background-color: #000;
+  color: #fff;
 }
 
 #lyrics {
-  background-color:#000;
-  color:#fff;
+  background-color: #000;
   font-family: 'VT323', monospace;
-	color: #0f0;
-}
+  color: #0f0;
 
-/* Highlighted text */
-span {
-  color: #fff;
-  font-weight: bold;
+  /* Two columns: fixed measure column, everything else for the beats */
+  display: grid;
+  grid-template-columns: 3rem 1fr;
+
+  /* Fill the screen height with equal-height rows */
+  height: 100dvh;
+  grid-auto-rows: 1fr;
+
+  /* Tunable knobs (see notes below) */
+  --beats: 4;   /* beats per line */
+  --chars: 12;   /* longest expected text in a beat, in characters */
 }
 
 .measure {
-  float:left;
-  line-height:40px;
-  vertical-align:middle;
-  font-size:15px;
+  font-size: 15px;
+  align-self: center;
+  text-align: right;
+  padding-right: 0.5rem;
 }
 
 .text {
-  text-align:center;
-  line-height:.8em;
-  font-size:78px;
+  display: grid;
+  grid-template-columns: repeat(var(--beats), 1fr);
+  align-items: center;
+  container-type: inline-size;  /* lets children size themselves from .text's width */
+  min-width: 0;
 }
 
+.beat {
+  /* beat cell width = 100cqw / beats; divide by chars * ~0.45em per glyph */
+  font-size: min(
+    calc(100cqw / (var(--beats) * var(--chars) * 0.45)),
+    calc(100dvh / var(--lines, 8))   /* don't exceed the row height */
+  );
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  min-width: 0;
+  text-align: left;
+}
+
+.beat.current {
+  color: #fff;
+  font-weight: bold;
+}
 
 
 </style>
@@ -108,13 +133,20 @@ function update_display() {
       html += "<div class=\"measure\">"+m+"</div>";
       html += "<div class=\"text\">";
       var b;
-      for (b=1; b <= maxbeats; ++b) {
-        if (b > 1) html += " ";
-        if (m == curm && b == curb) html += "<span>";
-        if (lyrics[m] && lyrics[m][b]) 
-          html += simple_unescape(lyrics[m][b]).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        else html += "&#x2219;";
-        if (m == curm && b == curb) html += "</span>";
+      for (b = 1; b <= maxbeats; ++b) {
+        var cls = "beat";
+        if (m == curm && b == curb) cls += " current";
+
+        html += "<span class=\"" + cls + "\">";
+        if (lyrics[m] && lyrics[m][b]) {
+          html += simple_unescape(lyrics[m][b])
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+        } else {
+          html += "&#x2219;";
+        }
+        html += "</span>";
       }
       html += "</div>";
     }
